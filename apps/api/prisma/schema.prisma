@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  patronymic    String?
+  avatar        String?
+  verified      Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  transactions  Transaction[]
+  transfersFrom Transfer[] @relation("TransferFrom")
+  transfersTo   Transfer[] @relation("TransferTo")
+  settings      UserSettings?
+  templates     TransferTemplate[]
+
+  @@map("users")
+}
+
+model UserSettings {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notifications
+  emailNotifications    Boolean  @default(true)
+  smsNotifications      Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  transactionAlerts     Boolean  @default(true)
+  marketingEmails       Boolean  @default(false)
+  
+  // Security
+  twoFactorEnabled      Boolean  @default(false)
+  loginNotifications    Boolean  @default(true)
+  sessionTimeout        Int      @default(30)
+  
+  // Interface
+  language              String   @default("ru")
+  theme                 String   @default("light")
+  compactMode           Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model Account {
+  id                String      @id @default(uuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              AccountType
+  number            String      @unique
+  balance           Decimal     @default(0) @db.Decimal(19, 4)
+  availableBalance  Decimal     @default(0) @db.Decimal(19, 4)
+  currency          String      @default("RUB")
+  name              String?
+  isActive          Boolean     @default(true)
+  isClosed          Boolean     @default(false)
+  closedAt          DateTime?
+  openedAt          DateTime    @default(now())
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Limits
+  dailyTransferLimit    Decimal @default(500000) @db.Decimal(19, 4)
+  dailyWithdrawalLimit  Decimal @default(150000) @db.Decimal(19, 4)
+  dailyTransferUsed     Decimal @default(0) @db.Decimal(19, 4)
+  dailyWithdrawalUsed   Decimal @default(0) @db.Decimal(19, 4)
+  limitResetDate        DateTime @default(now())
+
+  cards             Card[]
+  fromTransactions  Transaction[] @relation("FromAccount")
+  toTransactions    Transaction[] @relation("ToAccount")
+  fromTransfers     Transfer[] @relation("TransferFromAccount")
+  toTransfers       Transfer[] @relation("TransferToAccount")
+
+  @@map("accounts")
+}
+
+model Card {
+  id            String    @id @default(uuid())
+  accountId     String
+  account       Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  number        String    @unique
+  expiryDate    String
+  cvv           String
+  holderName    String
+  isVirtual     Boolean   @default(false)
+  isBlocked     Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("cards")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromAccountId   String?
+  fromAccount     Account?          @relation("FromAccount", fields: [fromAccountId], references: [id])
+  toAccountId     String?
+  toAccount       Account?          @relation("ToAccount", fields: [toAccountId], references: [id])
+  amount          Decimal           @db.Decimal(19, 4)
+  currency        String
+  type            TransactionType
+  status          TransactionStatus @default(COMPLETED)
+  category        String?
+  description     String?
+  merchantName    String?
+  merchantLogo    String?
+  balanceAfter    Decimal?          @db.Decimal(19, 4)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([fromAccountId, createdAt])
+  @@index([toAccountId, createdAt])
+  @@map("transactions")
+}
+
+model Transfer {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation("TransferFrom", fields: [userId], references: [id], onDelete: Cascade)
+  fromAccountId     String
+  fromAccount       Account         @relation("TransferFromAccount", fields: [fromAccountId], references: [id])
+  toAccountNumber   String
+  toAccountId       String?
+  toAccount         Account?        @relation("TransferToAccount", fields: [toAccountId], references: [id])
+  recipientName     String?
+  recipientUserId   String?
+  recipientUser     User?           @relation("TransferTo", fields: [recipientUserId], references: [id])
+  amount            Decimal         @db.Decimal(19, 4)
+  currency          String
+  description       String?
+  status            TransferStatus  @default(PENDING)
+  commission        Decimal         @default(0) @db.Decimal(19, 4)
+  createdAt         DateTime        @default(now())
+  completedAt       DateTime?
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([fromAccountId, createdAt])
+  @@map("transfers")
+}
+
+model TransferTemplate {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  toAccountNumber String
+  recipientName   String?
+  amount          Decimal? @db.Decimal(19, 4)
+  currency        String   @default("RUB")
+  description     String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("transfer_templates")
+}
+
+model Session {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  device      String?
+  ip          String?
+  location    String?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  lastActive  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@map("password_resets")
+}
+
+enum AccountType {
+  DEBIT
+  CREDIT
+  SAVINGS
+  DEPOSIT
+}
+
+enum TransactionType {
+  DEBIT
+  CREDIT
+  TRANSFER_OUT
+  TRANSFER_IN
+  WITHDRAWAL
+  DEPOSIT
+  FEE
+  INTEREST
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REVERSED
+}
+
+enum TransferStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
