@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Shield, Gift, Clock, CheckCircle2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
-import { authApi } from '@/api'
-import { Button } from '@/components/ui/Button'
 import { RegisterForm } from '@/components/RegisterForm'
 import toast from 'react-hot-toast'
 

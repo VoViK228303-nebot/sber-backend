@@ -6,7 +6,12 @@ import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
 import toast from 'react-hot-toast'
 
-export function Header() {
+export interface HeaderProps {
+  // Props can be added here if needed in the future
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function Header(_props: HeaderProps) {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
   const { toggleSidebar } = useUIStore()

@@ -201,3 +201,19 @@ export interface SessionInfo {
   current: boolean;
   lastActive: Date;
 }
+
+// Type aliases for backward compatibility
+export type RegisterInput = RegisterDTO;
+export type LoginInput = LoginDTO;
+export type CreateAccountInput = CreateAccountDTO;
+export type UpdateAccountInput = UpdateAccountDTO;
+export type CloseAccountInput = CloseAccountDTO;
+export type CreateTransferInput = CreateTransferDTO;
+export type CreateTransferTemplateInput = CreateTransferTemplateDTO;
+export type UpdateProfileInput = UpdateProfileDTO;
+export type UpdateSettingsInput = UpdateSettingsDTO;
+
+export interface PaginationInput {
+  limit: number;
+  offset: number;
+}

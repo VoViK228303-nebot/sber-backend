@@ -9,7 +9,7 @@ export function generateAccessToken(payload: Omit<TokenPayload, 'type'>): string
   return jwt.sign(
     { ...payload, type: 'access' },
     config.jwt.secret,
-    { expiresIn: config.jwt.accessExpiresIn }
+    { expiresIn: config.jwt.accessExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 }
 
@@ -20,7 +20,7 @@ export function generateRefreshToken(payload: Omit<TokenPayload, 'type'>): strin
   return jwt.sign(
     { ...payload, type: 'refresh' },
     config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshExpiresIn }
+    { expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'] }
   );
 }
 

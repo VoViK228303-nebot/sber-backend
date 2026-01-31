@@ -54,3 +54,4 @@ apps/api/prisma/migrations/*/migration.sql
 .temp/
 tmp/
 temp/
+.vercel

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { 
-  Globe, 
   Moon, 
   Sun, 
   Shield, 
@@ -9,10 +8,7 @@ import {
   Bell,
   Lock,
   Eye,
-  EyeOff,
-  LogOut,
-  ChevronRight,
-  CheckCircle2
+  LogOut
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { useUIStore } from '@/stores/uiStore'

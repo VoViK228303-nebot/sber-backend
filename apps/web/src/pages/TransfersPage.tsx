@@ -7,20 +7,14 @@ import {
   Star, 
   User, 
   Building2,
-  Smartphone,
-  CreditCard,
   CheckCircle2,
-  AlertCircle,
-  ChevronRight,
   Trash2
 } from 'lucide-react'
 import { accountsApi, transfersApi } from '@/api'
 import { formatCurrency } from '@/lib/utils'
-import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { TransferForm } from '@/components/TransferForm'
-import type { Account } from '@/types'
 import toast from 'react-hot-toast'
 
 export function TransfersPage() {
@@ -109,14 +103,7 @@ export function TransfersPage() {
     })
   }
 
-  const handleSelectTemplate = (template: typeof templates[0]) => {
-    // Navigate to transfer tab with pre-filled data
-    setActiveTab('transfer')
-    // TODO: Pre-fill form with template data
-    toast.success('Шаблон выбран')
-  }
-
-  const handleSelectRecent = (transfer: typeof recentTransfers[0]) => {
+  const handleSelectRecent = (_transfer: typeof recentTransfers[0]) => {
     setActiveTab('transfer')
     // TODO: Pre-fill form with recipient data
     toast.success('Получатель выбран')

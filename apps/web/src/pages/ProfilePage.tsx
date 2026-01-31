@@ -9,8 +9,7 @@ import {
   Camera,
   Mail,
   Phone,
-  CheckCircle2,
-  Loader2
+  CheckCircle2
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { authApi } from '@/api'
